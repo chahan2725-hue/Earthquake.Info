@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="ja">
 <head>
   <meta charset="utf-8">
@@ -58,10 +58,12 @@ function addIntensityMarker(lat, lon, intensity){
     iconSize:[24,24],
     iconAnchor:[12,12]
   });
-  L.marker([lat, lon], {icon, interactive:false, zIndexOffset:(intensityOrder[intensity]||0)*1000}).addTo(map);
+  const marker = L.marker([lat, lon], {icon, interactive:false, zIndexOffset:(intensityOrder[intensity]||0)*1000});
+  marker.addTo(map);
+  return marker;
 }
 
-// マーカー更新（既存マーカー削除して再描画）
+// マーカー更新
 let markers = [];
 function updateMarkers(data){
   markers.forEach(m => map.removeLayer(m));
@@ -74,14 +76,13 @@ function updateMarkers(data){
     const marker = addIntensityMarker(lat, lon, intensity);
     markers.push(marker);
   });
-  // 画面内に全マーカー収まるようにズーム
   const bounds = data.map(p => [Number(p.lat), Number(p.lon)]);
   if(bounds.length) map.fitBounds(bounds);
 }
 
-// GAS JSON を fetch（キャッシュ回避付き）
+// JSON読み込み（GitHub内）
 function fetchData(){
-  const url = "https://script.google.com/macros/s/あなたのデプロイURL/exec?ts=" + new Date().getTime();
+  const url = "data.json?ts=" + new Date().getTime(); // キャッシュ回避
   fetch(url)
     .then(res => res.json())
     .then(data => updateMarkers(data))
@@ -91,7 +92,7 @@ function fetchData(){
 // 初回取得
 fetchData();
 
-// 任意で更新ボタン作る場合
+// 更新ボタン
 const btn = document.createElement("button");
 btn.textContent = "最新データ更新";
 btn.style.position = "absolute";
